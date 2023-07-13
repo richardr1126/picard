@@ -1,22 +1,25 @@
+# Stage 1: Use a base image that already contains wget or curl
+FROM debian:latest AS downloader
+
+RUN apt-get update && \
+    apt-get install -y wget
+
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb -O /cuda-keyring_1.0-1_all.deb
+
+# Stage 2: Your main Docker image
 ARG BASE_IMAGE
 
-# ------------------------
-# Target: dev
-# ------------------------
 FROM $BASE_IMAGE as dev
 
 ARG TOOLKIT_USER_ID=13011
 ARG TOOLKIT_GROUP_ID=13011
 
-# # GitHub Issue Fix
-# RUN rm /etc/apt/sources.list.d/cuda.list
-# RUN rm /etc/apt/sources.list.d/nvidia-ml.list
+# Copy the keyring deb file from the first stage
+COPY --from=downloader /cuda-keyring_1.0-1_all.deb /cuda-keyring_1.0-1_all.deb
 
-RUN apt-get update && \
-    apt-get install -y wget && \
-    apt-key del 7fa2af80 && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb && \
-    dpkg -i cuda-keyring_1.0-1_all.deb && \
+RUN apt-key del 7fa2af80 && \
+    dpkg -i /cuda-keyring_1.0-1_all.deb && \
+    apt-get update && \
     apt-get install -y -q git curl unzip make gettext && \
     rm -rf /var/lib/apt/lists/*
 
