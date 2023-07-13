@@ -12,10 +12,11 @@ ARG TOOLKIT_GROUP_ID=13011
 # RUN rm /etc/apt/sources.list.d/cuda.list
 # RUN rm /etc/apt/sources.list.d/nvidia-ml.list
 
-RUN apt-key del 7fa2af80 && \
+RUN apt-get update && \
+    apt-get install -y wget && \
+    apt-key del 7fa2af80 && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb && \
     dpkg -i cuda-keyring_1.0-1_all.deb && \
-    apt-get update && \
     apt-get install -y -q git curl unzip make gettext && \
     rm -rf /var/lib/apt/lists/*
 
