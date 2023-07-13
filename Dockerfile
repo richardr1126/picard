@@ -1,30 +1,21 @@
 ARG BASE_IMAGE
-# Stage 1: Use a base image that already contains wget or curl
-FROM debian:latest AS downloader
 
-RUN apt-get update && \
-    apt-get install -y wget
-
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb -O /cuda-keyring_1.0-1_all.deb
-
-# Stage 2: Your main Docker image
+# ------------------------
+# Target: dev
+# ------------------------
 FROM $BASE_IMAGE as dev
 
 ARG TOOLKIT_USER_ID=13011
 ARG TOOLKIT_GROUP_ID=13011
 
-# Copy the keyring deb file from the first stage
-COPY --from=downloader /cuda-keyring_1.0-1_all.deb /cuda-keyring_1.0-1_all.deb
+# GitHub Issue Fix
+RUN rm /etc/apt/sources.list.d/cuda.list
+RUN rm /etc/apt/sources.list.d/nvidia-ml.list
 
-# Remove potential existing CUDA source lists
-RUN rm -f /etc/apt/sources.list.d/cuda.list /etc/apt/sources.list.d/nvidia-ml.list
-
-RUN apt-key del 7fa2af80 && \
-    dpkg -i /cuda-keyring_1.0-1_all.deb && \
-    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /" | tee /etc/apt/sources.list.d/cuda.list && \
-    apt-get update && \
-    apt-get install -y -q git curl unzip make gettext && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    # Required to save git hashes
+    && apt-get install -y -q git curl unzip make gettext \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 ENV XDG_DATA_HOME=/app/.local/share \
@@ -146,9 +137,6 @@ ENV RUSTUP_HOME=/app/.local/rustup \
     CARGO_HOME=/app/.local/cargo \
     PATH=/app/.local/cargo/bin:$PATH
 RUN set -eux; \
-    apt-key del 7fa2af80; \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb; \
-    dpkg -i cuda-keyring_1.0-1_all.deb; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         ca-certificates \
