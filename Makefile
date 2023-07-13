@@ -48,19 +48,19 @@ build-dev-image:
 		--builder $(BUILDKIT_BUILDER) \
 		--ssh default=$(SSH_AUTH_SOCK) \
 		-f Dockerfile \
-		--tag richardr1126/$(DEV_IMAGE_NAME):$(GIT_HEAD_REF) \
-		--tag richardr1126/$(DEV_IMAGE_NAME):cache \
-		--tag richardr1126/$(DEV_IMAGE_NAME):devcontainer \
+		--tag tscholak/$(DEV_IMAGE_NAME):$(GIT_HEAD_REF) \
+		--tag tscholak/$(DEV_IMAGE_NAME):cache \
+		--tag tscholak/$(DEV_IMAGE_NAME):devcontainer \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		--target dev \
-		--cache-from type=registry,ref=richardr1126/$(DEV_IMAGE_NAME):cache \
+		--cache-from type=registry,ref=tscholak/$(DEV_IMAGE_NAME):cache \
 		--cache-to type=inline \
 		--push \
 		git@github.com:richardr1126/picard#$(GIT_HEAD_REF)
 
 .PHONY: pull-dev-image
 pull-dev-image:
-	docker pull richardr1126/$(DEV_IMAGE_NAME):$(GIT_HEAD_REF)
+	docker pull tscholak/$(DEV_IMAGE_NAME):$(GIT_HEAD_REF)
 
 .PHONY: build-train-image
 build-train-image:
@@ -69,18 +69,18 @@ build-train-image:
 		--builder $(BUILDKIT_BUILDER) \
 		--ssh default=$(SSH_AUTH_SOCK) \
 		-f Dockerfile \
-		--tag richardr1126/$(TRAIN_IMAGE_NAME):$(GIT_HEAD_REF) \
-		--tag richardr1126/$(TRAIN_IMAGE_NAME):cache \
+		--tag tscholak/$(TRAIN_IMAGE_NAME):$(GIT_HEAD_REF) \
+		--tag tscholak/$(TRAIN_IMAGE_NAME):cache \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		--target train \
-		--cache-from type=registry,ref=richardr1126/$(TRAIN_IMAGE_NAME):cache \
+		--cache-from type=registry,ref=tscholak/$(TRAIN_IMAGE_NAME):cache \
 		--cache-to type=inline \
 		--push \
 		git@github.com:richardr1126/picard#$(GIT_HEAD_REF)
 
 .PHONY: pull-train-image
 pull-train-image:
-	docker pull richardr1126/$(TRAIN_IMAGE_NAME):$(GIT_HEAD_REF)
+	docker pull tscholak/$(TRAIN_IMAGE_NAME):$(GIT_HEAD_REF)
 
 .PHONY: build-eval-image
 build-eval-image:
@@ -89,18 +89,18 @@ build-eval-image:
 		--builder $(BUILDKIT_BUILDER) \
 		--ssh default=$(SSH_AUTH_SOCK) \
 		-f Dockerfile \
-		--tag richardr1126/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
-		--tag richardr1126/$(EVAL_IMAGE_NAME):cache \
+		--tag tscholak/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
+		--tag tscholak/$(EVAL_IMAGE_NAME):cache \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		--target eval \
-		--cache-from type=registry,ref=richardr1126/$(EVAL_IMAGE_NAME):cache \
+		--cache-from type=registry,ref=tscholak/$(EVAL_IMAGE_NAME):cache \
 		--cache-to type=inline \
 		--push \
 		git@github.com:richardr1126/picard#$(GIT_HEAD_REF)
 
 .PHONY: pull-eval-image
 pull-eval-image:
-	docker pull richardr1126/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF)
+	docker pull tscholak/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF)
 
 .PHONY: train
 train: pull-train-image
@@ -115,7 +115,7 @@ train: pull-train-image
 		--mount type=bind,source=$(BASE_DIR)/transformers_cache,target=/transformers_cache \
 		--mount type=bind,source=$(BASE_DIR)/configs,target=/app/configs \
 		--mount type=bind,source=$(BASE_DIR)/wandb,target=/app/wandb \
-		richardr1126/$(TRAIN_IMAGE_NAME):$(GIT_HEAD_REF) \
+		tscholak/$(TRAIN_IMAGE_NAME):$(GIT_HEAD_REF) \
 		/bin/bash -c "python seq2seq/run_seq2seq.py configs/train.json"
 
 .PHONY: train_cosql
@@ -131,7 +131,7 @@ train_cosql: pull-train-image
 		--mount type=bind,source=$(BASE_DIR)/transformers_cache,target=/transformers_cache \
 		--mount type=bind,source=$(BASE_DIR)/configs,target=/app/configs \
 		--mount type=bind,source=$(BASE_DIR)/wandb,target=/app/wandb \
-		richardr1126/$(TRAIN_IMAGE_NAME):$(GIT_HEAD_REF) \
+		tscholak/$(TRAIN_IMAGE_NAME):$(GIT_HEAD_REF) \
 		/bin/bash -c "python seq2seq/run_seq2seq.py configs/train_cosql.json"
 
 .PHONY: eval
@@ -147,7 +147,7 @@ eval: pull-eval-image
 		--mount type=bind,source=$(BASE_DIR)/transformers_cache,target=/transformers_cache \
 		--mount type=bind,source=$(BASE_DIR)/configs,target=/app/configs \
 		--mount type=bind,source=$(BASE_DIR)/wandb,target=/app/wandb \
-		richardr1126/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
+		tscholak/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
 		/bin/bash -c "python seq2seq/run_seq2seq.py configs/eval.json"
 
 .PHONY: eval_cosql
@@ -163,7 +163,7 @@ eval_cosql: pull-eval-image
 		--mount type=bind,source=$(BASE_DIR)/transformers_cache,target=/transformers_cache \
 		--mount type=bind,source=$(BASE_DIR)/configs,target=/app/configs \
 		--mount type=bind,source=$(BASE_DIR)/wandb,target=/app/wandb \
-		richardr1126/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
+		tscholak/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
 		/bin/bash -c "python seq2seq/run_seq2seq.py configs/eval_cosql.json"
 
 .PHONY: serve
@@ -178,7 +178,7 @@ serve: pull-eval-image
 		--mount type=bind,source=$(BASE_DIR)/database,target=/database \
 		--mount type=bind,source=$(BASE_DIR)/transformers_cache,target=/transformers_cache \
 		--mount type=bind,source=$(BASE_DIR)/configs,target=/app/configs \
-		richardr1126/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
+		tscholak/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
 		/bin/bash -c "python seq2seq/serve_seq2seq.py configs/serve.json"
 
 .PHONY: prediction_output
@@ -192,5 +192,5 @@ prediction_output: pull-eval-image
 		--mount type=bind,source=$(BASE_DIR)/prediction_output,target=/prediction_output \
 		--mount type=bind,source=$(BASE_DIR)/transformers_cache,target=/transformers_cache \
 		--mount type=bind,source=$(BASE_DIR)/configs,target=/app/configs \
-		richardr1126/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
+		tscholak/$(EVAL_IMAGE_NAME):$(GIT_HEAD_REF) \
 		/bin/bash -c "python seq2seq/prediction_output.py configs/prediction_output.json"
