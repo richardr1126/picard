@@ -16,8 +16,12 @@ ARG TOOLKIT_GROUP_ID=13011
 # Copy the keyring deb file from the first stage
 COPY --from=downloader /cuda-keyring_1.0-1_all.deb /cuda-keyring_1.0-1_all.deb
 
+# Remove potential existing CUDA source lists
+RUN rm -f /etc/apt/sources.list.d/cuda.list /etc/apt/sources.list.d/nvidia-ml.list
+
 RUN apt-key del 7fa2af80 && \
     dpkg -i /cuda-keyring_1.0-1_all.deb && \
+    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /" | tee /etc/apt/sources.list.d/cuda.list && \
     apt-get update && \
     apt-get install -y -q git curl unzip make gettext && \
     rm -rf /var/lib/apt/lists/*
