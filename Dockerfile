@@ -1,3 +1,4 @@
+ARG BASE_IMAGE
 # Stage 1: Use a base image that already contains wget or curl
 FROM debian:latest AS downloader
 
@@ -7,8 +8,6 @@ RUN apt-get update && \
 RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb -O /cuda-keyring_1.0-1_all.deb
 
 # Stage 2: Your main Docker image
-ARG BASE_IMAGE
-
 FROM $BASE_IMAGE as dev
 
 ARG TOOLKIT_USER_ID=13011
